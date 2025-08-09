@@ -75,7 +75,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             border-bottom: 3px solid transparent;
-            position: relative;
         }
 
         .tab-button:hover {
@@ -89,16 +88,6 @@
             border-bottom-color: #007bff;
         }
 
-        .tab-button.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #007bff;
-        }
-
         .content {
             padding: 20px;
             min-height: 600px;
@@ -106,22 +95,10 @@
 
         .tab-content {
             display: none;
-            animation: fadeIn 0.5s ease-in;
         }
 
         .tab-content.active {
             display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .dashboard-info {
@@ -151,29 +128,6 @@
             margin-top: 20px;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
-
-        .loading::before {
-            content: '';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .footer {
             text-align: center;
             padding: 20px;
@@ -196,6 +150,15 @@
                 padding: 15px;
             }
         }
+
+        /* תיקון עבור Tableau */
+        .tableauPlaceholder {
+            width: 100% !important;
+        }
+        
+        .tableauViz {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
@@ -208,12 +171,12 @@
         <div class="tabs-container">
             <ul class="tabs">
                 <li class="tab">
-                    <button class="tab-button active" onclick="switchTab('branch-manager')">
+                    <button class="tab-button active" onclick="switchTab('branch-manager', this)">
                         דאשבורד למנהל סניף
                     </button>
                 </li>
                 <li class="tab">
-                    <button class="tab-button" onclick="switchTab('network-manager')">
+                    <button class="tab-button" onclick="switchTab('network-manager', this)">
                         דאשבורד למנהלי רשת
                     </button>
                 </li>
@@ -228,9 +191,6 @@
                 </div>
                 
                 <div class="tableau-container">
-                    <div id="branch-loading" class="loading">
-                        טוען דאשבורד...
-                    </div>
                     <div class='tableauPlaceholder' id='viz1754748806835' style='position: relative'>
                         <noscript>
                             <a href='#'>
@@ -263,10 +223,7 @@
                 </div>
                 
                 <div class="tableau-container">
-                    <div id="network-loading" class="loading" style="display: none;">
-                        טוען דאשבורד...
-                    </div>
-                    <div class='tableauPlaceholder' id='viz1754748833889' style='position: relative; display: none;'>
+                    <div class='tableauPlaceholder' id='viz1754748833889' style='position: relative'>
                         <noscript>
                             <a href='#'>
                                 <img alt='דאשבורד למנהלי רשת' src='https://public.tableau.com/static/images/pr/proj_17547189486600/sheet0/1_rss.png' style='border: none' />
@@ -297,129 +254,58 @@
         </div>
     </div>
 
-    <script>
-        let branchViz = null;
-        let networkViz = null;
-        let branchLoaded = false;
-        let networkLoaded = false;
-
-        function switchTab(tabId) {
+    <script type='text/javascript'>
+        function switchTab(tabId, button) {
             // הסתרת כל התוכן
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.remove('active'));
             
             // הסרת active מכל הטאבים
             const buttons = document.querySelectorAll('.tab-button');
-            buttons.forEach(button => button.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
             
             // הצגת התוכן הנבחר
             document.getElementById(tabId).classList.add('active');
-            
-            // הוספת active לטאב הנבחר
-            event.target.classList.add('active');
-            
-            // טעינת הדאשבורד המתאים
-            if (tabId === 'branch-manager' && !branchLoaded) {
-                loadBranchDashboard();
-            } else if (tabId === 'network-manager' && !networkLoaded) {
-                loadNetworkDashboard();
+            button.classList.add('active');
+        }
+
+        // אתחול הדאשבורדים
+        function initDashboards() {
+            // דאשבורד למנהל סניף
+            var divElement1 = document.getElementById('viz1754748806835');
+            var vizElement1 = divElement1.getElementsByTagName('object')[0];
+            if (divElement1.offsetWidth > 800) {
+                vizElement1.style.width = '100%';
+                vizElement1.style.height = (divElement1.offsetWidth * 0.75) + 'px';
+            } else if (divElement1.offsetWidth > 500) {
+                vizElement1.style.width = '100%';
+                vizElement1.style.height = (divElement1.offsetWidth * 0.75) + 'px';
+            } else {
+                vizElement1.style.width = '100%';
+                vizElement1.style.height = '1227px';
+            }
+            var scriptElement1 = document.createElement('script');
+            scriptElement1.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+            vizElement1.parentNode.insertBefore(scriptElement1, vizElement1);
+
+            // דאשבורד למנהלי רשת
+            var divElement2 = document.getElementById('viz1754748833889');
+            var vizElement2 = divElement2.getElementsByTagName('object')[0];
+            if (divElement2.offsetWidth > 800) {
+                vizElement2.style.width = '2244px';
+                vizElement2.style.height = '1293px';
+            } else if (divElement2.offsetWidth > 500) {
+                vizElement2.style.width = '2244px';
+                vizElement2.style.height = '1293px';
+            } else {
+                vizElement2.style.width = '100%';
+                vizElement2.style.height = '1777px';
             }
         }
 
-        function loadBranchDashboard() {
-            const containerUrl = 'https://public.tableau.com/javascripts/api/viz_v1.js';
-            const divElement = document.getElementById('viz1754748806835');
-            const vizElement = divElement.getElementsByTagName('object')[0];
-            
-            // התאמת גדלים
-            if (divElement.offsetWidth > 800) {
-                vizElement.style.width = '100%';
-                vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-            } else if (divElement.offsetWidth > 500) {
-                vizElement.style.width = '100%';
-                vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-            } else {
-                vizElement.style.width = '100%';
-                vizElement.style.height = '1227px';
-            }
-
-            // טעינת הסקריפט
-            if (!document.querySelector('script[src="' + containerUrl + '"]')) {
-                const scriptElement = document.createElement('script');
-                scriptElement.src = containerUrl;
-                scriptElement.onload = function() {
-                    document.getElementById('branch-loading').style.display = 'none';
-                    divElement.style.display = 'block';
-                };
-                vizElement.parentNode.insertBefore(scriptElement, vizElement);
-            } else {
-                document.getElementById('branch-loading').style.display = 'none';
-                divElement.style.display = 'block';
-            }
-            
-            branchLoaded = true;
-        }
-
-        function loadNetworkDashboard() {
-            document.getElementById('network-loading').style.display = 'block';
-            
-            const containerUrl = 'https://public.tableau.com/javascripts/api/viz_v1.js';
-            const divElement = document.getElementById('viz1754748833889');
-            const vizElement = divElement.getElementsByTagName('object')[0];
-            
-            // התאמת גדלים
-            if (divElement.offsetWidth > 800) {
-                vizElement.style.width = '2244px';
-                vizElement.style.height = '1293px';
-            } else if (divElement.offsetWidth > 500) {
-                vizElement.style.width = '2244px';
-                vizElement.style.height = '1293px';
-            } else {
-                vizElement.style.width = '100%';
-                vizElement.style.height = '1777px';
-            }
-
-            // טעינת הסקריפט אם לא קיים
-            if (!document.querySelector('script[src="' + containerUrl + '"]')) {
-                const scriptElement = document.createElement('script');
-                scriptElement.src = containerUrl;
-                scriptElement.onload = function() {
-                    document.getElementById('network-loading').style.display = 'none';
-                    divElement.style.display = 'block';
-                };
-                document.head.appendChild(scriptElement);
-            } else {
-                setTimeout(function() {
-                    document.getElementById('network-loading').style.display = 'none';
-                    divElement.style.display = 'block';
-                }, 1000);
-            }
-            
-            networkLoaded = true;
-        }
-
-        // טעינת הדאשבורד הראשון בעת טעינת הדף
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(loadBranchDashboard, 500);
-        });
-
-        // התאמה לשינויי גודל חלון
-        window.addEventListener('resize', function() {
-            if (branchLoaded) {
-                const divElement = document.getElementById('viz1754748806835');
-                const vizElement = divElement.getElementsByTagName('object')[0];
-                
-                if (divElement.offsetWidth > 800) {
-                    vizElement.style.width = '100%';
-                    vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-                } else if (divElement.offsetWidth > 500) {
-                    vizElement.style.width = '100%';
-                    vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
-                } else {
-                    vizElement.style.width = '100%';
-                    vizElement.style.height = '1227px';
-                }
-            }
+        // טעינת הדאשבורדים כשהדף נטען
+        window.addEventListener('load', function() {
+            setTimeout(initDashboards, 1000);
         });
     </script>
 </body>
